@@ -1,0 +1,90 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <div class="container">
+        {% if message and update %}
+            <div class="alert alert-success" role="alert">
+                {{ message }}
+            </div>
+        {% else %}
+            <div class="alert alert-danger" role="alert">
+                {{ message }}
+            </div>
+        {% endif %}
+            
+    </div>
+    
+    {% if not listing.isActive and user == listing.price.user %}
+        <div class="alert alert-success" role="alert">
+            Congratulations! You won the Auction!
+        </div>
+    {% endif %}
+
+    <div class="row mx-3">
+        {% if user.is_authenticated and listing.isActive %}
+            
+            {% if isOwner %}
+            <form action="{% url 'closeAuction' id=listing.id%}" method="POST" class="mx-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">Close Auction</button>
+            </form>
+            {% endif %}
+                
+            {% if isListingWatchList %}
+                <form action="{% url 'removeWatchlist' id=listing.id%}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Remove from Watchlist</button>
+                </form>
+            {% else %}
+                <form action="{% url 'addWatchlist' id=listing.id%}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Add to Watchlist</button>
+                </form>
+            {% endif %}
+        {% endif %}
+    </div>
+    <h2>Pokemon: {{listing.title}}</h2>
+    <img src="{{ listing.imageUrl }}" class="imageUrl" alt="{{ listing.title }}" height="400px">
+    <p class="description">{{ listing.description }}</p>
+    <p> Owner: {{listing.owner}}</p>
+    <div class="form-group ">
+        <label for="price" class="col-form-label-lg " >Price:</label>
+        <button class="btn btn-primary mx-3">Initial Price: ${{ listing.price.bid  }}</button>
+    </div>
+    {% if user.is_authenticated %}
+    <form action="{% url 'addBid' id=listing.id %} " method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="price" >Add Bid</label>
+            <input type="number" min="0" name="newBid" placeholder="Add new Bid">
+            <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+        
+    </form>
+    {% endif %}
+    <p>{{ message }}</p>
+
+    <h2>Comments</h2>
+    <br/>
+    {% if user.is_authenticated %}
+        <form action="{% url 'addComment' id=listing.id %} " method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="newComment" >Add Comment</label>
+                <input type="text" name="newComment" placeholder="Add new Comment">
+                <button type="submit" class="btn btn-warning">Add</button>
+            </div>
+            
+        </form>
+    {%endif%}
+    <br/>
+    <ul class="list-group">
+        {% for comment in Comments %}
+        <li class="Comment">
+            {{ comment.message }}
+            <p>by <strong>{{comment.author}}</strong></p>
+            <hr>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
